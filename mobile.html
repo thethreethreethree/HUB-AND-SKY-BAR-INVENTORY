@@ -41,7 +41,10 @@
           <h1>Inventory</h1>
         </div>
       </div>
-      <button id="menu-button" class="m-menu-btn" type="button">Menu</button>
+      <div class="m-topbar-actions">
+        <button id="save-button" class="m-menu-btn m-save-btn" type="button">Save</button>
+        <button id="menu-button" class="m-menu-btn" type="button">Menu</button>
+      </div>
     </header>
 
     <div class="m-search-row">
@@ -54,6 +57,8 @@
 
     <main id="card-list" class="m-card-list"></main>
   </div>
+
+  <div id="toast" class="m-toast" role="status" aria-live="polite"></div>
 
   <button id="cam-fab" class="m-fab m-fab-secondary" type="button" aria-label="Take a picture">
     <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden="true"><path d="M9 3l-1.6 2H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.4L15 3H9zm3 4.5a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>

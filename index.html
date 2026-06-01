@@ -67,6 +67,7 @@
           <h2>Quick actions</h2>
         </div>
         <div class="button-grid">
+          <button id="save-button" class="button button-primary">Save progress</button>
           <button id="open-add-button" class="button button-primary">Add Item</button>
           <button id="open-calc" class="button button-secondary">Calculator</button>
           <button id="save-snapshot" class="button button-secondary">Save snapshot</button>
@@ -139,6 +140,8 @@
       </div>
     </footer>
   </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <div class="modal-backdrop hidden" id="add-modal">
     <section class="panel panel-light edit-card" id="add-panel">

@@ -130,6 +130,12 @@ label {
   letter-spacing: -0.02em;
 }
 
+.m-topbar-actions {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 8px;
+}
+
 .m-menu-btn {
   flex: 0 0 auto;
   padding: 10px 16px;
@@ -138,6 +144,35 @@ label {
   background: var(--accent-soft);
   color: var(--accent);
   font-weight: 600;
+}
+
+.m-save-btn {
+  background: var(--accent-grad);
+  color: var(--on-accent);
+  border: none;
+}
+
+.m-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(24px + env(safe-area-inset-bottom));
+  transform: translateX(-50%) translateY(10px);
+  z-index: 200;
+  padding: 12px 20px;
+  border-radius: 999px;
+  background: var(--surface-strong, var(--surface-bright));
+  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: 0 14px 30px rgba(3, 12, 28, 0.3);
+  font-weight: 600;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.m-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
 }
 
 /* Search */

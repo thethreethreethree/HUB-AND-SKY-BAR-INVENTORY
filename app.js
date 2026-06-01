@@ -52,6 +52,8 @@ const elements = {
   compareResults: document.querySelector('#compare-results'),
   snapshotList: document.querySelector('#snapshot-list'),
   themeToggle: document.querySelector('#theme-toggle'),
+  saveButton: document.querySelector('#save-button'),
+  toast: document.querySelector('#toast'),
   inventoryHead: document.querySelector('#inventory-table thead')
 };
 
@@ -61,6 +63,19 @@ let filterState = { search: '', category: 'all', sortKey: '', sortDir: 'asc' };
 function saveInventory() {
   persistInventory(inventory);
   renderInventory();
+}
+
+let toastTimer = null;
+function showToast(message) {
+  elements.toast.textContent = message;
+  elements.toast.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => elements.toast.classList.remove('show'), 1600);
+}
+
+function handleSave() {
+  persistInventory(inventory);
+  showToast('Progress saved');
 }
 
 function loadInventory() {
@@ -619,6 +634,7 @@ function attachEvents() {
     if (event.target === elements.analysisModal) closeAnalysis();
   });
   elements.themeToggle.addEventListener('click', toggleTheme);
+  elements.saveButton.addEventListener('click', handleSave);
   elements.inventoryHead.addEventListener('click', handleSortClick);
 }
 

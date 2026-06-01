@@ -21,6 +21,8 @@ const el = {
   sheetCancel: document.querySelector('#sheet-cancel'),
 
   fabCam: document.querySelector('#cam-fab'),
+  saveButton: document.querySelector('#save-button'),
+  toast: document.querySelector('#toast'),
 
   menuButton: document.querySelector('#menu-button'),
   menuSheet: document.querySelector('#menu-sheet'),
@@ -75,6 +77,19 @@ function loadInventory() {
 function saveInventory() {
   persistInventory(inventory);
   renderCards();
+}
+
+let toastTimer = null;
+function showToast(message) {
+  el.toast.textContent = message;
+  el.toast.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.toast.classList.remove('show'), 1600);
+}
+
+function handleSave() {
+  persistInventory(inventory);
+  showToast('Progress saved');
 }
 
 function getVisibleRows() {
@@ -506,6 +521,7 @@ function attachEvents() {
   });
   el.fabAdd.addEventListener('click', openAdd);
   el.addItem.addEventListener('click', openAdd);
+  el.saveButton.addEventListener('click', handleSave);
   el.themeToggle.addEventListener('click', toggleTheme);
   el.cardList.addEventListener('click', handleCardClick);
 
