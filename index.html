@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hub & Skybar Inventory</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Hub & Skybar</p>
+        <h1>Inventory Management</h1>
+      </div>
+      <div class="status-pill" id="inventory-count">0 items</div>
+    </header>
+
+    <main class="main-grid">
+      <section class="panel panel-primary">
+        <div class="panel-heading">
+          <h2>Quick actions</h2>
+        </div>
+        <div class="button-grid">
+          <button id="open-add-button" class="button button-primary">Add Item</button>
+          <button id="export-csv" class="button button-secondary">Export CSV</button>
+          <button id="export-json" class="button button-secondary">Export JSON</button>
+          <button id="import-csv-button" class="button button-secondary">Import CSV</button>
+          <button id="import-json-button" class="button button-secondary">Import JSON</button>
+          <label class="button button-secondary file-label">
+            Upload Image
+            <input id="ocr-file" type="file" accept="image/*" hidden />
+          </label>
+        </div>
+        <p class="help-text">Scan inventory photos to auto-populate records. Use export/import for sharing and repo backup.</p>
+        <div class="wide-note">
+          <strong>Record storage:</strong> browser local storage. Export to CSV/JSON for shared repo sync.
+        </div>
+      </section>
+
+      <section class="panel panel-light" id="add-panel">
+        <div class="panel-heading">
+          <h2>Add / edit item</h2>
+        </div>
+        <form id="item-form" class="stack" autocomplete="off">
+          <div class="field-grid">
+            <label>Item name<input type="text" id="item-name" placeholder="e.g. ABSOLUT VODKA (1000ml)" required /></label>
+            <label>Category<input type="text" id="item-category" placeholder="BAR" required /></label>
+            <label>UOM<input type="text" id="item-uom" placeholder="L, ML, EA, KG, GR" required /></label>
+            <label>Min on hand<input type="text" id="item-min" placeholder="1 Bot + 760mL" /></label>
+            <label>Par<input type="text" id="item-par" placeholder="480mL" /></label>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="button button-primary">Save item</button>
+            <button type="button" id="cancel-add" class="button button-ghost">Cancel</button>
+          </div>
+          <input type="hidden" id="item-index" value="-1" />
+        </form>
+      </section>
+
+      <section class="panel panel-dark table-panel">
+        <div class="panel-heading">
+          <h2>Inventory list</h2>
+        </div>
+        <div class="table-wrapper">
+          <table id="inventory-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Category</th>
+                <th>UOM</th>
+                <th>Min on hand</th>
+                <th>Par</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel panel-secondary">
+        <div class="panel-heading">
+          <h2>Data transfer</h2>
+        </div>
+        <div class="stack">
+          <p>Use this panel to import or paste inventory records for team sharing.</p>
+          <label class="textarea-label">Paste CSV text<textarea id="csv-paste" placeholder="Name,Category,UOM,MinOnHand,Par"></textarea></label>
+          <button id="paste-csv" class="button button-secondary">Import pasted CSV</button>
+          <label class="textarea-label">Paste JSON<textarea id="json-paste" placeholder='[{"name":"...","category":"...","uom":"...","min":"...","par":"..."}]'></textarea></label>
+          <button id="paste-json" class="button button-secondary">Import pasted JSON</button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>Local inventory system. Save exports to repo or share JSON with colleagues.</p>
+      <button id="logout-button" class="button button-ghost">Logout</button>
+    </footer>
+  </div>
+
+  <div class="modal-backdrop hidden" id="login-modal">
+    <div class="login-card">
+      <h2>Secure access</h2>
+      <p>Enter the password to manage inventory.</p>
+      <form id="login-form" class="stack" autocomplete="off">
+        <label>Password<input type="password" id="login-password" required /></label>
+        <button class="button button-primary">Unlock</button>
+      </form>
+      <p class="modal-note">Default password: <strong>hubandsky</strong>. Change the password in the code when you deploy.</p>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
