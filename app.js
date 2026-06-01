@@ -19,6 +19,8 @@ const elements = {
   calcInsert: document.querySelector('#calc-insert'),
   calcClose: document.querySelector('#calc-close'),
   calcTargetNote: document.querySelector('#calc-target-note'),
+  calcUnit: document.querySelector('#calc-unit'),
+  calcUnitRow: document.querySelector('#calc-unit-row'),
   itemForm: document.querySelector('#item-form'),
   itemName: document.querySelector('#item-name'),
   itemCategory: document.querySelector('#item-category'),
@@ -179,9 +181,12 @@ function openCalculator(targetInput) {
     }
     elements.calcTargetNote.textContent = `Insert into "${fieldLabelText(calcTargetInput)}"`;
     elements.calcInsert.style.display = '';
+    elements.calcUnit.innerHTML = calcUnitOptionsHtml(defaultUnitForUom(elements.itemUom.value));
+    elements.calcUnitRow.classList.remove('hidden');
   } else {
     elements.calcTargetNote.textContent = 'Scratch pad';
     elements.calcInsert.style.display = 'none';
+    elements.calcUnitRow.classList.add('hidden');
   }
   renderCalc();
   elements.calcModal.classList.remove('hidden');
@@ -203,7 +208,8 @@ function handleCalcKey(event) {
 
 function insertCalcResult() {
   if (calcTargetInput && calcState.display !== 'Error') {
-    calcTargetInput.value = calcState.display;
+    const unit = elements.calcUnit.value;
+    calcTargetInput.value = unit ? `${calcState.display} ${unit}` : calcState.display;
     calcTargetInput.dispatchEvent(new Event('input', { bubbles: true }));
   }
   closeCalculator();

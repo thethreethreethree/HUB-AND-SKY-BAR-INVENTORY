@@ -320,6 +320,22 @@ function calcKeypadHtml() {
   ).join('');
 }
 
+// Units offered when inserting a calculated value into a count field.
+const CALC_UNITS = ['mL', 'L', 'Bot', 'Cans', 'Grams', 'kg', 'Pack', 'Pcs', 'Box'];
+
+function defaultUnitForUom(uom) {
+  const map = { ML: 'mL', L: 'L', KG: 'kg', GR: 'Grams', EA: 'Pcs' };
+  return map[String(uom || '').trim().toUpperCase()] || '';
+}
+
+function calcUnitOptionsHtml(selected) {
+  const units = CALC_UNITS.slice();
+  if (selected && !units.includes(selected)) units.unshift(selected);
+  return ['<option value="">(no unit)</option>']
+    .concat(units.map((u) => `<option value="${escapeHtml(u)}"${u === selected ? ' selected' : ''}>${escapeHtml(u)}</option>`))
+    .join('');
+}
+
 function newCalcState() {
   return { display: '0', acc: null, op: null, overwrite: true };
 }
