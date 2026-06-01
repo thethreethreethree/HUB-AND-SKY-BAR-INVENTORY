@@ -65,15 +65,22 @@
         <div class="panel-heading">
           <h2>Inventory list</h2>
         </div>
+        <div class="table-toolbar">
+          <input type="search" id="search-input" class="toolbar-input" placeholder="Search name, category, UOM…" />
+          <select id="category-filter" class="toolbar-input">
+            <option value="all">All categories</option>
+          </select>
+          <button type="button" id="clear-filters" class="button button-ghost">Clear filters</button>
+        </div>
         <div class="table-wrapper">
           <table id="inventory-table">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Category</th>
-                <th>UOM</th>
-                <th>Min on hand</th>
-                <th>Par</th>
+                <th class="sortable" data-sort="name">Name <span class="sort-indicator"></span></th>
+                <th class="sortable" data-sort="category">Category <span class="sort-indicator"></span></th>
+                <th class="sortable" data-sort="uom">UOM <span class="sort-indicator"></span></th>
+                <th class="sortable" data-sort="min">Min on hand <span class="sort-indicator"></span></th>
+                <th class="sortable" data-sort="par">Par <span class="sort-indicator"></span></th>
                 <th>Actions</th>
               </tr>
             </thead>

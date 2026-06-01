@@ -13,6 +13,8 @@ A simple browser-based inventory management system for Hub & Skybar.
 
 - password-protected access (default password: `hubandsky`)
 - add, edit, delete inventory items
+- search items and filter by category
+- sort any column by clicking its header
 - import and export inventory via CSV and JSON
 - paste CSV/JSON directly into the interface
 - image upload OCR to auto-populate inventory rows from photos

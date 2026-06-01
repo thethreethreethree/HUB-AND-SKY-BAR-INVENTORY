@@ -1,6 +1,6 @@
 const STORAGE_KEY = 'hub-sky-inventory-v1';
 const SESSION_KEY = 'hub-sky-session';
-const PASSWORD_HASH = '8c4a41e762bd4f1d8b52d3bc6a2e285e0a8c8d301b43b13d09b72f2a559d913b'; // sha256('hubandsky')
+const PASSWORD = 'hubandsky'; // default password for the local app
 
 const defaultInventory = [
   { name: 'ABSOLUT VODKA (1000ml)', category: 'BAR', uom: 'L', min: '1 Bot + 760mL', par: '' },
@@ -35,17 +35,15 @@ const elements = {
   pasteCsv: document.querySelector('#paste-csv'),
   pasteJson: document.querySelector('#paste-json'),
   csvPaste: document.querySelector('#csv-paste'),
-  jsonPaste: document.querySelector('#json-paste')
+  jsonPaste: document.querySelector('#json-paste'),
+  searchInput: document.querySelector('#search-input'),
+  categoryFilter: document.querySelector('#category-filter'),
+  clearFilters: document.querySelector('#clear-filters'),
+  inventoryHead: document.querySelector('#inventory-table thead')
 };
 
 let inventory = [];
-
-async function hashText(text) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(text);
-  const digest = await crypto.subtle.digest('SHA-256', data);
-  return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, '0')).join('');
-}
+let filterState = { search: '', category: 'all', sortKey: '', sortDir: 'asc' };
 
 function getStoredInventory() {
   const raw = localStorage.getItem(STORAGE_KEY);
@@ -69,8 +67,97 @@ function loadInventory() {
 }
 
 function renderInventory() {
-  elements.inventoryTable.innerHTML = inventory.map((item, index) => createTableRow(item, index)).join('');
-  elements.inventoryCount.textContent = `${inventory.length} items`;
+  refreshCategoryFilter();
+  const rows = getVisibleRows();
+  if (rows.length) {
+    elements.inventoryTable.innerHTML = rows.map(({ item, index }) => createTableRow(item, index)).join('');
+  } else {
+    const message = inventory.length ? 'No items match your filters.' : 'No inventory items yet. Add one to get started.';
+    elements.inventoryTable.innerHTML = `<tr class="empty-row"><td colspan="6">${message}</td></tr>`;
+  }
+  const total = inventory.length;
+  const shown = rows.length;
+  elements.inventoryCount.textContent = shown === total ? `${total} items` : `${shown} of ${total} items`;
+  applySortIndicators();
+}
+
+function getVisibleRows() {
+  let rows = inventory.map((item, index) => ({ item, index }));
+  const search = filterState.search.trim().toLowerCase();
+  if (search) {
+    rows = rows.filter(({ item }) =>
+      [item.name, item.category, item.uom, item.min, item.par].some((value) =>
+        String(value || '').toLowerCase().includes(search)));
+  }
+  if (filterState.category !== 'all') {
+    rows = rows.filter(({ item }) => (item.category || '').trim() === filterState.category);
+  }
+  if (filterState.sortKey) {
+    const direction = filterState.sortDir === 'desc' ? -1 : 1;
+    rows.sort((a, b) => {
+      const av = String(a.item[filterState.sortKey] || '');
+      const bv = String(b.item[filterState.sortKey] || '');
+      return av.localeCompare(bv, undefined, { numeric: true, sensitivity: 'base' }) * direction;
+    });
+  }
+  return rows;
+}
+
+function refreshCategoryFilter() {
+  const select = elements.categoryFilter;
+  if (!select) return;
+  const categories = Array.from(new Set(inventory.map((item) => (item.category || '').trim()).filter(Boolean)))
+    .sort((a, b) => a.localeCompare(b));
+  if (!categories.includes(filterState.category)) {
+    filterState.category = 'all';
+  }
+  select.innerHTML = '<option value="all">All categories</option>' +
+    categories.map((category) => `<option value="${escapeHtml(category)}">${escapeHtml(category)}</option>`).join('');
+  select.value = filterState.category;
+}
+
+function applySortIndicators() {
+  if (!elements.inventoryHead) return;
+  elements.inventoryHead.querySelectorAll('th.sortable').forEach((th) => {
+    const indicator = th.querySelector('.sort-indicator');
+    if (th.dataset.sort === filterState.sortKey) {
+      th.classList.add('sort-active');
+      if (indicator) indicator.textContent = filterState.sortDir === 'asc' ? '▲' : '▼';
+    } else {
+      th.classList.remove('sort-active');
+      if (indicator) indicator.textContent = '';
+    }
+  });
+}
+
+function handleSearchInput(event) {
+  filterState.search = event.target.value;
+  renderInventory();
+}
+
+function handleCategoryChange(event) {
+  filterState.category = event.target.value;
+  renderInventory();
+}
+
+function handleClearFilters() {
+  filterState = { search: '', category: 'all', sortKey: '', sortDir: 'asc' };
+  if (elements.searchInput) elements.searchInput.value = '';
+  if (elements.categoryFilter) elements.categoryFilter.value = 'all';
+  renderInventory();
+}
+
+function handleSortClick(event) {
+  const th = event.target.closest('th.sortable');
+  if (!th) return;
+  const key = th.dataset.sort;
+  if (filterState.sortKey === key) {
+    filterState.sortDir = filterState.sortDir === 'asc' ? 'desc' : 'asc';
+  } else {
+    filterState.sortKey = key;
+    filterState.sortDir = 'asc';
+  }
+  renderInventory();
 }
 
 function createTableRow(item, index) {
@@ -108,12 +195,11 @@ function requireLogin() {
   if (!isLoggedIn()) openLogin();
 }
 
-async function handleLogin(event) {
+function handleLogin(event) {
   event.preventDefault();
   const attempt = elements.loginPassword.value.trim();
   if (!attempt) return;
-  const attemptHash = await hashText(attempt);
-  if (attemptHash === PASSWORD_HASH) {
+  if (attempt === PASSWORD) {
     sessionStorage.setItem(SESSION_KEY, 'true');
     closeLogin();
     loadInventory();
@@ -268,7 +354,7 @@ function handleImportJsonClick() {
 
 function normalizeItem(obj) {
   return {
-    name: String(obj.name || obj.Name || obj.name || '').trim(),
+    name: String(obj.name || obj.Name || '').trim(),
     category: String(obj.category || obj.Category || 'BAR').trim(),
     uom: String(obj.uom || obj.UOM || 'EA').trim().toUpperCase(),
     min: String(obj.min || obj.MinOnHand || '').trim(),
@@ -399,6 +485,10 @@ function attachEvents() {
   elements.ocrFile.addEventListener('change', handleOcrFile);
   elements.pasteCsv.addEventListener('click', handlePasteCsv);
   elements.pasteJson.addEventListener('click', handlePasteJson);
+  elements.searchInput.addEventListener('input', handleSearchInput);
+  elements.categoryFilter.addEventListener('change', handleCategoryChange);
+  elements.clearFilters.addEventListener('click', handleClearFilters);
+  elements.inventoryHead.addEventListener('click', handleSortClick);
 }
 
 function initApp() {
