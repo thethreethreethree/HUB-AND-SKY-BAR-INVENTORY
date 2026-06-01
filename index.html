@@ -19,6 +19,18 @@
       } catch (e) {}
     })();
   </script>
+  <script>
+    // Apply the saved (or system) theme before paint to avoid a flash.
+    (function () {
+      try {
+        var t = localStorage.getItem('hub-theme');
+        if (t !== 'light' && t !== 'dark') {
+          t = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+        }
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Dancing+Script:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -43,7 +55,10 @@
           <h1>Inventory Management</h1>
         </div>
       </div>
-      <div class="status-pill" id="inventory-count">0 items</div>
+      <div class="topbar-right">
+        <button type="button" id="theme-toggle" class="theme-toggle">Light mode</button>
+        <div class="status-pill" id="inventory-count">0 items</div>
+      </div>
     </header>
 
     <main class="main-grid">

@@ -1,13 +1,51 @@
 :root {
-  color-scheme: dark;
-  --bg: #090b10;
-  --surface: #11151f;
-  --surface-bright: #171d2a;
-  --text: #f6f8fb;
-  --muted: #97a0b8;
-  --accent: #f59e0b;
+  --bg: #0a1424;
+  --surface: #0f1d33;
+  --surface-bright: #142844;
+  --text: #eef6ff;
+  --muted: #93acce;
+  --accent: #38bdf8;
+  --accent-strong: #0ea5e9;
+  --accent-soft: rgba(56, 189, 248, 0.14);
+  --accent-grad: linear-gradient(135deg, #38bdf8, #0ea5e9);
+  --on-accent: #052439;
   --danger: #f87171;
-  --border: rgba(255, 255, 255, 0.08);
+  --danger-soft: rgba(248, 113, 113, 0.14);
+  --border: rgba(148, 197, 255, 0.14);
+  --field-bg: rgba(255, 255, 255, 0.04);
+  --field-border: rgba(255, 255, 255, 0.12);
+  --chip-bg: rgba(255, 255, 255, 0.06);
+  --panel-bg: linear-gradient(180deg, #142441, #0e1c33);
+  --panel-soft: rgba(255, 255, 255, 0.03);
+  --pos: #4ade80;
+  --neg: #f87171;
+  --scrim: rgba(0, 0, 0, 0.6);
+  color-scheme: dark;
+}
+
+:root[data-theme='light'] {
+  --bg: #eef6ff;
+  --surface: #ffffff;
+  --surface-bright: #ffffff;
+  --text: #0f2440;
+  --muted: #56688a;
+  --accent: #0284c7;
+  --accent-strong: #0369a1;
+  --accent-soft: rgba(2, 132, 199, 0.12);
+  --accent-grad: linear-gradient(135deg, #0ea5e9, #0284c7);
+  --on-accent: #ffffff;
+  --danger: #dc2626;
+  --danger-soft: rgba(220, 38, 38, 0.1);
+  --border: rgba(13, 45, 90, 0.14);
+  --field-bg: rgba(13, 45, 90, 0.04);
+  --field-border: rgba(13, 45, 90, 0.16);
+  --chip-bg: rgba(13, 45, 90, 0.05);
+  --panel-bg: #ffffff;
+  --panel-soft: rgba(13, 45, 90, 0.03);
+  --pos: #16a34a;
+  --neg: #dc2626;
+  --scrim: rgba(13, 30, 58, 0.45);
+  color-scheme: light;
 }
 
 * {
@@ -22,7 +60,7 @@ body {
 
 body {
   font-family: 'Inter', sans-serif;
-  background: radial-gradient(circle at top left, rgba(245, 158, 11, 0.12), transparent 30%), var(--bg);
+  background: radial-gradient(circle at top left, var(--accent-soft), transparent 32%), var(--bg);
   color: var(--text);
   min-height: 100vh;
   -webkit-text-size-adjust: 100%;
@@ -60,7 +98,7 @@ label {
   justify-content: space-between;
   gap: 12px;
   padding: 16px 0 12px;
-  background: linear-gradient(180deg, var(--bg) 70%, rgba(9, 11, 16, 0.4));
+  background: linear-gradient(180deg, var(--bg) 72%, transparent);
 }
 
 .m-brand {
@@ -96,8 +134,8 @@ label {
   flex: 0 0 auto;
   padding: 10px 16px;
   border-radius: 999px;
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  background: rgba(245, 158, 11, 0.16);
+  border: 1px solid var(--border);
+  background: var(--accent-soft);
   color: var(--accent);
   font-weight: 600;
 }
@@ -116,7 +154,7 @@ label {
 .m-input {
   width: 100%;
   min-height: 48px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--field-border);
   border-radius: 14px;
   padding: 12px 16px;
   background: var(--surface-bright);
@@ -141,10 +179,11 @@ label {
 }
 
 .m-card {
-  background: linear-gradient(180deg, rgba(23, 29, 42, 0.96), rgba(16, 20, 30, 0.96));
+  background: var(--panel-bg);
   border: 1px solid var(--border);
   border-radius: 18px;
   padding: 16px;
+  box-shadow: 0 8px 24px rgba(3, 12, 28, 0.12);
 }
 
 .m-card-top {
@@ -164,9 +203,9 @@ label {
   flex: 0 0 auto;
   padding: 4px 10px;
   border-radius: 999px;
-  background: rgba(245, 158, 11, 0.14);
+  background: var(--accent-soft);
   color: var(--accent);
-  border: 1px solid rgba(245, 158, 11, 0.2);
+  border: 1px solid var(--border);
   font-size: 0.72rem;
   font-weight: 600;
   white-space: nowrap;
@@ -222,17 +261,18 @@ label {
 }
 
 .m-btn-primary {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
+  background: var(--accent-grad);
+  color: var(--on-accent);
 }
 
 .m-btn-ghost {
-  background: rgba(255, 255, 255, 0.07);
+  background: var(--chip-bg);
   border: 1px solid var(--border);
 }
 
 .m-btn-danger {
-  background: rgba(248, 113, 113, 0.14);
-  border: 1px solid rgba(248, 113, 113, 0.3);
+  background: var(--danger-soft);
+  border: 1px solid var(--border);
   color: var(--danger);
 }
 
@@ -250,11 +290,11 @@ label {
   height: 60px;
   border-radius: 50%;
   border: none;
-  background: linear-gradient(135deg, #f59e0b, #d97706);
-  color: #1b1300;
+  background: var(--accent-grad);
+  color: var(--on-accent);
   font-size: 2rem;
   line-height: 1;
-  box-shadow: 0 16px 30px rgba(245, 158, 11, 0.4);
+  box-shadow: 0 16px 30px rgba(56, 189, 248, 0.4);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -267,8 +307,8 @@ label {
   height: 54px;
   background: var(--surface-bright);
   color: var(--accent);
-  border: 1px solid rgba(245, 158, 11, 0.4);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border);
+  box-shadow: 0 12px 24px rgba(3, 12, 28, 0.35);
 }
 
 /* Field calculator trigger */
@@ -291,9 +331,9 @@ label {
   justify-content: center;
   width: 42px;
   height: 38px;
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  border: 1px solid var(--border);
   border-radius: 11px;
-  background: rgba(245, 158, 11, 0.16);
+  background: var(--accent-soft);
   color: var(--accent);
 }
 
@@ -318,11 +358,27 @@ label {
   font-weight: 700;
   padding: 16px 18px;
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--field-bg);
   border: 1px solid var(--border);
   margin: 12px 0 14px;
   overflow-x: auto;
   white-space: nowrap;
+}
+
+.calc-unit-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.calc-unit-row span {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.calc-unit-row select {
+  flex: 1;
 }
 
 .calc-keys {
@@ -335,7 +391,7 @@ label {
   padding: 18px 0;
   border-radius: 14px;
   border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--chip-bg);
   color: var(--text);
   font-size: 1.3rem;
   font-weight: 600;
@@ -350,8 +406,8 @@ label {
 }
 
 .calc-key.calc-eq {
-  background: linear-gradient(135deg, #f59e0b, #d97706);
-  color: #1b1300;
+  background: var(--accent-grad);
+  color: var(--on-accent);
   border: none;
 }
 
@@ -360,7 +416,7 @@ label {
   position: fixed;
   inset: 0;
   z-index: 40;
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--scrim);
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -387,7 +443,7 @@ label {
   width: 44px;
   height: 5px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--field-border);
   margin: 0 auto 14px;
 }
 
@@ -407,13 +463,14 @@ label {
   font-size: 0.85rem;
 }
 
-.m-form input {
+.m-form input,
+.m-form select {
   width: 100%;
   min-height: 48px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--field-border);
   border-radius: 14px;
   padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--field-bg);
   color: var(--text);
   font-size: 16px;
 }
@@ -445,7 +502,7 @@ label {
   min-height: 56px;
   padding: 12px;
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--chip-bg);
   border: 1px solid var(--border);
   color: var(--text);
   font-weight: 600;
@@ -461,7 +518,7 @@ label {
 
 .m-menu-danger {
   color: var(--danger);
-  border-color: rgba(248, 113, 113, 0.3);
+  border-color: var(--border);
 }
 
 /* Overlay / spinner */
@@ -469,7 +526,7 @@ label {
   position: fixed;
   inset: 0;
   z-index: 60;
-  background: rgba(0, 0, 0, 0.78);
+  background: rgba(6, 16, 34, 0.82);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -482,14 +539,15 @@ label {
   gap: 10px;
   justify-items: center;
   max-width: 320px;
+  color: #eef6ff;
 }
 
 .m-spinner {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  border: 4px solid rgba(245, 158, 11, 0.25);
-  border-top-color: var(--accent);
+  border: 4px solid rgba(56, 189, 248, 0.25);
+  border-top-color: #38bdf8;
   animation: spin 900ms linear infinite;
 }
 
@@ -558,7 +616,7 @@ label {
 .cmp-table td {
   text-align: left;
   padding: 9px 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid var(--border);
 }
 
 .cmp-table th {
@@ -574,11 +632,11 @@ label {
   padding: 16px;
 }
 
-.cmp-up { color: #4ade80; }
-.cmp-down { color: #f87171; }
+.cmp-up { color: var(--pos); }
+.cmp-down { color: var(--neg); }
 .cmp-flat { color: var(--muted); }
 .cmp-add { color: var(--accent); }
-.cmp-rem { color: #f87171; }
+.cmp-rem { color: var(--neg); }
 .cmp-na { color: var(--muted); }
 
 .snapshot-list {
@@ -595,7 +653,7 @@ label {
   padding: 12px;
   border: 1px solid var(--border);
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--panel-soft);
 }
 
 .snap-meta {

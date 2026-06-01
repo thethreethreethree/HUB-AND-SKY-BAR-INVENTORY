@@ -51,6 +51,7 @@ const elements = {
   compareRun: document.querySelector('#compare-run'),
   compareResults: document.querySelector('#compare-results'),
   snapshotList: document.querySelector('#snapshot-list'),
+  themeToggle: document.querySelector('#theme-toggle'),
   inventoryHead: document.querySelector('#inventory-table thead')
 };
 
@@ -213,6 +214,26 @@ function insertCalcResult() {
     calcTargetInput.dispatchEvent(new Event('input', { bubbles: true }));
   }
   closeCalculator();
+}
+
+/* Theme */
+function currentTheme() {
+  return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+}
+
+function updateThemeButton() {
+  elements.themeToggle.textContent = currentTheme() === 'light' ? 'Dark mode' : 'Light mode';
+}
+
+function toggleTheme() {
+  const next = currentTheme() === 'light' ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', next);
+  try {
+    localStorage.setItem('hub-theme', next);
+  } catch (e) {
+    /* ignore storage errors */
+  }
+  updateThemeButton();
 }
 
 /* Snapshots & analysis */
@@ -597,6 +618,7 @@ function attachEvents() {
   elements.analysisModal.addEventListener('click', (event) => {
     if (event.target === elements.analysisModal) closeAnalysis();
   });
+  elements.themeToggle.addEventListener('click', toggleTheme);
   elements.inventoryHead.addEventListener('click', handleSortClick);
 }
 

@@ -9,6 +9,18 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Dancing+Script:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="mobile.css" />
+  <script>
+    // Apply the saved (or system) theme before paint to avoid a flash.
+    (function () {
+      try {
+        var t = localStorage.getItem('hub-theme');
+        if (t !== 'light' && t !== 'dark') {
+          t = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+        }
+        document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body>
   <div class="m-app">
@@ -97,6 +109,7 @@
           <input id="ocr-upload" type="file" accept="image/*" hidden />
         </label>
         <button id="add-item" class="m-menu-item" type="button">Add item</button>
+        <button id="theme-toggle" class="m-menu-item" type="button">Light mode</button>
         <button id="open-calc" class="m-menu-item" type="button">Calculator</button>
         <button id="save-snapshot" class="m-menu-item" type="button">Save snapshot</button>
         <button id="start-new" class="m-menu-item" type="button">Start new inventory</button>
