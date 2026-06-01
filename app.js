@@ -249,10 +249,10 @@ function handleSaveSnapshot() {
     return;
   }
   const stamp = new Date();
-  const name = prompt('Name this snapshot:', 'Snapshot ' + stamp.toLocaleString());
+  const name = prompt('Name this snapshot:', 'Inventory for ' + stamp.toLocaleDateString());
   if (name === null) return;
   saveSnapshot(name, inventory, stamp.toISOString());
-  alert(`Snapshot saved. You now have ${getSnapshots().length} saved snapshot(s).`);
+  alert(`Saved "${name}". You now have ${getSnapshots().length} saved snapshot(s).`);
 }
 
 function handleStartNew() {
@@ -264,7 +264,7 @@ function handleStartNew() {
     return;
   }
   const stamp = new Date();
-  saveSnapshot('Stock-take ' + stamp.toLocaleString(), inventory, stamp.toISOString());
+  saveSnapshot('Inventory for ' + stamp.toLocaleDateString(), inventory, stamp.toISOString());
   inventory = clearedCounts(inventory);
   saveInventory();
   alert('Saved a snapshot and cleared the counts. Enter your new counts, then use "Compare / analysis" to see the % change.');
@@ -625,6 +625,7 @@ function attachEvents() {
 function initApp() {
   toggleAddPanel(false);
   elements.calcKeys.innerHTML = calcKeypadHtml();
+  updateThemeButton();
   attachEvents();
   if (!isLoggedIn()) {
     openLogin();

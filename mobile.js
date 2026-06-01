@@ -26,6 +26,7 @@ const el = {
   menuSheet: document.querySelector('#menu-sheet'),
   menuClose: document.querySelector('#menu-close'),
   addItem: document.querySelector('#add-item'),
+  themeToggle: document.querySelector('#theme-toggle'),
   openCalc: document.querySelector('#open-calc'),
   saveSnapshotBtn: document.querySelector('#save-snapshot'),
   startNew: document.querySelector('#start-new'),
@@ -378,6 +379,26 @@ function insertCalcResult() {
   closeCalculator();
 }
 
+/* Theme */
+function currentTheme() {
+  return document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+}
+
+function updateThemeButton() {
+  el.themeToggle.textContent = currentTheme() === 'light' ? 'Dark mode' : 'Light mode';
+}
+
+function toggleTheme() {
+  const next = currentTheme() === 'light' ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', next);
+  try {
+    localStorage.setItem('hub-theme', next);
+  } catch (e) {
+    /* ignore storage errors */
+  }
+  updateThemeButton();
+}
+
 /* Snapshots & analysis */
 function formatSnapDate(iso) {
   if (!iso) return '';
@@ -392,10 +413,10 @@ function handleSaveSnapshot() {
     return;
   }
   const stamp = new Date();
-  const name = prompt('Name this snapshot:', 'Snapshot ' + stamp.toLocaleString());
+  const name = prompt('Name this snapshot:', 'Inventory for ' + stamp.toLocaleDateString());
   if (name === null) return;
   saveSnapshot(name, inventory, stamp.toISOString());
-  alert(`Snapshot saved. You now have ${getSnapshots().length} saved snapshot(s).`);
+  alert(`Saved "${name}". You now have ${getSnapshots().length} saved snapshot(s).`);
 }
 
 function handleStartNew() {
@@ -408,7 +429,7 @@ function handleStartNew() {
     return;
   }
   const stamp = new Date();
-  saveSnapshot('Stock-take ' + stamp.toLocaleString(), inventory, stamp.toISOString());
+  saveSnapshot('Inventory for ' + stamp.toLocaleDateString(), inventory, stamp.toISOString());
   inventory = clearedCounts(inventory);
   saveInventory();
   alert('Saved a snapshot and cleared the counts. Enter your new counts, then use Compare to see the % change.');
@@ -485,6 +506,7 @@ function attachEvents() {
   });
   el.fabAdd.addEventListener('click', openAdd);
   el.addItem.addEventListener('click', openAdd);
+  el.themeToggle.addEventListener('click', toggleTheme);
   el.cardList.addEventListener('click', handleCardClick);
 
   el.itemForm.addEventListener('submit', handleSaveItem);
@@ -536,6 +558,7 @@ function attachEvents() {
 
 function initApp() {
   el.calcKeys.innerHTML = calcKeypadHtml();
+  updateThemeButton();
   attachEvents();
   if (!isLoggedIn()) {
     openSheet(el.loginModal);
