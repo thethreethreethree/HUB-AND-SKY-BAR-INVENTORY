@@ -6,7 +6,7 @@
   <title>Hub & Skybar Inventory</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Dancing+Script:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -26,6 +26,7 @@
         </div>
         <div class="button-grid">
           <button id="open-add-button" class="button button-primary">Add Item</button>
+          <button id="load-sample" class="button button-secondary">Load full list</button>
           <button id="export-csv" class="button button-secondary">Export CSV</button>
           <button id="export-json" class="button button-secondary">Export JSON</button>
           <button id="import-csv-button" class="button button-secondary">Import CSV</button>
@@ -41,26 +42,6 @@
         </div>
       </section>
 
-      <section class="panel panel-light" id="add-panel">
-        <div class="panel-heading">
-          <h2>Add / edit item</h2>
-        </div>
-        <form id="item-form" class="stack" autocomplete="off">
-          <div class="field-grid">
-            <label>Item name<input type="text" id="item-name" placeholder="e.g. ABSOLUT VODKA (1000ml)" required /></label>
-            <label>Category<input type="text" id="item-category" placeholder="BAR" required /></label>
-            <label>UOM<input type="text" id="item-uom" placeholder="L, ML, EA, KG, GR" required /></label>
-            <label>Min on hand<input type="text" id="item-min" placeholder="1 Bot + 760mL" /></label>
-            <label>Par<input type="text" id="item-par" placeholder="480mL" /></label>
-          </div>
-          <div class="form-actions">
-            <button type="submit" class="button button-primary">Save item</button>
-            <button type="button" id="cancel-add" class="button button-ghost">Cancel</button>
-          </div>
-          <input type="hidden" id="item-index" value="-1" />
-        </form>
-      </section>
-
       <section class="panel panel-dark table-panel">
         <div class="panel-heading">
           <h2>Inventory list</h2>
@@ -71,6 +52,7 @@
             <option value="all">All categories</option>
           </select>
           <button type="button" id="clear-filters" class="button button-ghost">Clear filters</button>
+          <button type="button" id="add-from-list" class="button button-primary">+ Add item</button>
         </div>
         <div class="table-wrapper">
           <table id="inventory-table">
@@ -105,8 +87,33 @@
 
     <footer class="footer">
       <p>Local inventory system. Save exports to repo or share JSON with colleagues.</p>
-      <button id="logout-button" class="button button-ghost">Logout</button>
+      <div class="footer-actions">
+        <a class="button button-secondary" href="mobile.html">Mobile view</a>
+        <button id="logout-button" class="button button-ghost">Logout</button>
+      </div>
     </footer>
+  </div>
+
+  <div class="modal-backdrop hidden" id="add-modal">
+    <section class="panel panel-light edit-card" id="add-panel">
+      <div class="panel-heading">
+        <h2 id="add-panel-title">Add item</h2>
+      </div>
+      <form id="item-form" class="stack" autocomplete="off">
+        <div class="field-grid">
+          <label>Item name<input type="text" id="item-name" placeholder="e.g. ABSOLUT VODKA (1000ml)" required /></label>
+          <label>Category<input type="text" id="item-category" placeholder="BAR" required /></label>
+          <label>UOM<input type="text" id="item-uom" placeholder="L, ML, EA, KG, GR" required /></label>
+          <label>Min on hand<input type="text" id="item-min" placeholder="1 Bot + 760mL" /></label>
+          <label>Par<input type="text" id="item-par" placeholder="480mL" /></label>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="button button-primary">Save item</button>
+          <button type="button" id="cancel-add" class="button button-ghost">Cancel</button>
+        </div>
+        <input type="hidden" id="item-index" value="-1" />
+      </form>
+    </section>
   </div>
 
   <div class="modal-backdrop hidden" id="login-modal">
@@ -122,6 +129,7 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
+  <script src="inventory-core.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

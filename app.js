@@ -1,15 +1,5 @@
-const STORAGE_KEY = 'hub-sky-inventory-v1';
-const SESSION_KEY = 'hub-sky-session';
-const PASSWORD = 'hubandsky'; // default password for the local app
-
-const defaultInventory = [
-  { name: 'ABSOLUT VODKA (1000ml)', category: 'BAR', uom: 'L', min: '1 Bot + 760mL', par: '' },
-  { name: 'AMARETTO LIQUEUR (750ml)', category: 'BAR', uom: 'KG', min: '147 grams', par: '' },
-  { name: 'BACARDI SUPERIOR (750ml)', category: 'BAR', uom: 'ML', min: '2 Bot + 500mL', par: '' },
-  { name: 'BOMBSAY SAPPHIRE (750ml)', category: 'BAR', uom: 'ML', min: '3 Bot + 240mL', par: '' },
-  { name: 'BOTTLED WATER (1000ml)', category: 'BAR', uom: 'EA', min: '12? Bot', par: '' },
-  { name: 'MANGO', category: 'Fruits', uom: 'EA', min: 'mixer', par: 'orange' }
-];
+// Constants (STORAGE_KEY, SESSION_KEY, PASSWORD, defaultInventory) and shared
+// data helpers live in inventory-core.js, which loads before this file.
 
 const elements = {
   inventoryTable: document.querySelector('#inventory-table tbody'),
@@ -20,6 +10,8 @@ const elements = {
   logoutButton: document.querySelector('#logout-button'),
   openAddButton: document.querySelector('#open-add-button'),
   cancelAdd: document.querySelector('#cancel-add'),
+  addModal: document.querySelector('#add-modal'),
+  addPanelTitle: document.querySelector('#add-panel-title'),
   itemForm: document.querySelector('#item-form'),
   itemName: document.querySelector('#item-name'),
   itemCategory: document.querySelector('#item-category'),
@@ -39,30 +31,21 @@ const elements = {
   searchInput: document.querySelector('#search-input'),
   categoryFilter: document.querySelector('#category-filter'),
   clearFilters: document.querySelector('#clear-filters'),
+  addFromList: document.querySelector('#add-from-list'),
+  loadSample: document.querySelector('#load-sample'),
   inventoryHead: document.querySelector('#inventory-table thead')
 };
 
 let inventory = [];
 let filterState = { search: '', category: 'all', sortKey: '', sortDir: 'asc' };
 
-function getStoredInventory() {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  if (!raw) return null;
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
-}
-
 function saveInventory() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(inventory));
+  persistInventory(inventory);
   renderInventory();
 }
 
 function loadInventory() {
-  const stored = getStoredInventory();
-  inventory = Array.isArray(stored) ? stored : defaultInventory.slice();
+  inventory = getInitialInventory();
   renderInventory();
 }
 
@@ -147,6 +130,15 @@ function handleClearFilters() {
   renderInventory();
 }
 
+function handleLoadSample() {
+  if (inventory.length && !confirm(`Replace the current ${inventory.length} item(s) with the full sample inventory (${defaultInventory.length} items)? This overwrites the current list.`)) {
+    return;
+  }
+  inventory = defaultInventory.map((item) => ({ ...item }));
+  saveInventory();
+  alert(`Loaded ${inventory.length} items. Review and edit the handwritten counts as needed.`);
+}
+
 function handleSortClick(event) {
   const th = event.target.closest('th.sortable');
   if (!th) return;
@@ -173,10 +165,6 @@ function createTableRow(item, index) {
         <button type="button" class="button button-ghost row-action" data-action="delete" data-index="${index}">Delete</button>
       </td>
     </tr>`;
-}
-
-function escapeHtml(value) {
-  return value ? String(value).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char])) : '';
 }
 
 function openLogin() {
@@ -215,7 +203,8 @@ function handleLogout() {
 }
 
 function toggleAddPanel(show) {
-  document.querySelector('#add-panel').style.display = show ? 'block' : 'none';
+  elements.addModal.classList.toggle('hidden', !show);
+  document.body.classList.toggle('modal-open', show);
 }
 
 function resetForm() {
@@ -224,8 +213,9 @@ function resetForm() {
 }
 
 function handleOpenAdd() {
-  toggleAddPanel(true);
   resetForm();
+  elements.addPanelTitle.textContent = 'Add item';
+  toggleAddPanel(true);
   elements.itemName.focus();
 }
 
@@ -275,29 +265,14 @@ function handleTableClick(event) {
 function openEditItem(index) {
   const item = inventory[index];
   if (!item) return;
-  toggleAddPanel(true);
+  elements.addPanelTitle.textContent = 'Edit item';
   elements.itemName.value = item.name;
   elements.itemCategory.value = item.category;
   elements.itemUom.value = item.uom;
   elements.itemMin.value = item.min;
   elements.itemPar.value = item.par;
   elements.itemIndex.value = String(index);
-}
-
-function downloadBlob(content, filename, type) {
-  const blob = new Blob([content], { type });
-  const url = URL.createObjectURL(blob);
-  const anchor = document.createElement('a');
-  anchor.href = url;
-  anchor.download = filename;
-  anchor.click();
-  URL.revokeObjectURL(url);
-}
-
-function convertToCsv(records) {
-  const header = ['Name', 'Category', 'UOM', 'MinOnHand', 'Par'];
-  const rows = records.map((item) => [item.name, item.category, item.uom, item.min, item.par].map((value) => `"${String(value || '').replace(/"/g, '""')}"`).join(','));
-  return [header.join(','), ...rows].join('\n');
+  toggleAddPanel(true);
 }
 
 function handleExportCsv() {
@@ -352,37 +327,6 @@ function handleImportJsonClick() {
   input.click();
 }
 
-function normalizeItem(obj) {
-  return {
-    name: String(obj.name || obj.Name || '').trim(),
-    category: String(obj.category || obj.Category || 'BAR').trim(),
-    uom: String(obj.uom || obj.UOM || 'EA').trim().toUpperCase(),
-    min: String(obj.min || obj.MinOnHand || '').trim(),
-    par: String(obj.par || obj.Par || '').trim()
-  };
-}
-
-function parseCsvText(text) {
-  const lines = text.trim().split(/\r?\n/).filter((line) => line.trim());
-  if (!lines.length) return [];
-  const header = lines[0].split(',').map((col) => col.replace(/['"\s]/g, '').toLowerCase());
-  const isHeader = header.includes('name') && header.includes('category');
-  const dataLines = isHeader ? lines.slice(1) : lines;
-  return dataLines.reduce((result, row) => {
-    const fields = row.match(/(?:"([^"]*)"|[^,]+)/g)?.map((value) => value.replace(/^"|"$/g, '').trim()) || [];
-    if (fields.length >= 3) {
-      result.push(normalizeItem({
-        Name: fields[0],
-        Category: fields[1] || 'BAR',
-        UOM: fields[2] || 'EA',
-        MinOnHand: fields[3] || '',
-        Par: fields[4] || ''
-      }));
-    }
-    return result;
-  }, []);
-}
-
 function handlePasteCsv() {
   const text = elements.csvPaste.value.trim();
   if (!text) return alert('Paste CSV text first.');
@@ -406,68 +350,27 @@ function handlePasteJson() {
   }
 }
 
-function parseOcrLines(rawText) {
-  const cleaned = rawText.replace(/\u00A0/g, ' ').replace(/\s*\|\s*/g, ' ').trim();
-  const lines = cleaned.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
-  const headerPattern = /name.*category.*uom/i;
-  const rows = [];
-
-  for (const line of lines) {
-    if (headerPattern.test(line)) continue;
-    const parts = line.split(/\s{2,}|\t/).filter(Boolean);
-    if (parts.length >= 4) {
-      const parsed = guessRowFromParts(parts);
-      if (parsed) rows.push(parsed);
-      continue;
-    }
-    const spaceParts = line.split(/\s+/).filter(Boolean);
-    if (spaceParts.length >= 4) {
-      const parsed = guessRowFromParts(spaceParts);
-      if (parsed) rows.push(parsed);
-    }
-  }
-  return rows;
-}
-
-function guessRowFromParts(parts) {
-  const uomIndex = parts.findIndex((part) => ['L', 'ML', 'EA', 'KG', 'GR', 'BT', 'CAN'].includes(part.toUpperCase()));
-  if (uomIndex >= 1) {
-    const name = parts.slice(0, uomIndex - 1).join(' ');
-    const category = parts[uomIndex - 1] || 'BAR';
-    const uom = parts[uomIndex].toUpperCase();
-    const remaining = parts.slice(uomIndex + 1);
-    const min = remaining[0] || '';
-    const par = remaining.slice(1).join(' ') || '';
-    return normalizeItem({ Name: name, Category: category, UOM: uom, MinOnHand: min, Par: par });
-  }
-  if (parts.length >= 5) {
-    return normalizeItem({ Name: parts.slice(0, parts.length - 4).join(' '), Category: parts[parts.length - 4], UOM: parts[parts.length - 3], MinOnHand: parts[parts.length - 2], Par: parts[parts.length - 1] });
-  }
-  return null;
-}
-
 async function handleOcrFile(event) {
   const file = event.target.files?.[0];
   if (!file) return;
-  const worker = Tesseract.createWorker({ logger: (m) => console.log(m) });
+  const button = event.target.closest('.file-label');
+  const originalLabel = button ? button.firstChild.textContent : '';
+  if (button) button.firstChild.textContent = ' Scanning image\u2026 ';
   try {
-    await worker.load();
-    await worker.loadLanguage('eng');
-    await worker.initialize('eng');
-    const { data: { text } } = await worker.recognize(file);
-    const parsed = parseOcrLines(text);
+    const parsed = await runOcr(file);
     if (parsed.length) {
       inventory = [...inventory, ...parsed];
       saveInventory();
-      alert(`OCR imported ${parsed.length} items. Review and edit any results.`);
+      alert(`OCR imported ${parsed.length} items. Printed text reads best; review the handwritten counts.`);
     } else {
-      alert('OCR completed but no inventory rows were recognized. Check the image and try again.');
+      alert('OCR completed but no inventory rows were recognized. Handwritten columns scan poorly \u2014 try a printed list or use CSV import.');
     }
   } catch (error) {
     console.error(error);
     alert('OCR failed. Please try a clearer image or use CSV import.');
   } finally {
-    await worker.terminate();
+    if (button) button.firstChild.textContent = originalLabel;
+    event.target.value = '';
   }
 }
 
@@ -476,6 +379,12 @@ function attachEvents() {
   elements.logoutButton.addEventListener('click', handleLogout);
   elements.openAddButton.addEventListener('click', handleOpenAdd);
   elements.cancelAdd.addEventListener('click', handleCancelAdd);
+  elements.addModal.addEventListener('click', (event) => {
+    if (event.target === elements.addModal) handleCancelAdd();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !elements.addModal.classList.contains('hidden')) handleCancelAdd();
+  });
   elements.itemForm.addEventListener('submit', handleSaveItem);
   elements.inventoryTable.parentElement.addEventListener('click', handleTableClick);
   elements.exportCsv.addEventListener('click', handleExportCsv);
@@ -488,6 +397,8 @@ function attachEvents() {
   elements.searchInput.addEventListener('input', handleSearchInput);
   elements.categoryFilter.addEventListener('change', handleCategoryChange);
   elements.clearFilters.addEventListener('click', handleClearFilters);
+  elements.addFromList.addEventListener('click', handleOpenAdd);
+  elements.loadSample.addEventListener('click', handleLoadSample);
   elements.inventoryHead.addEventListener('click', handleSortClick);
 }
 

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#090b10" />
+  <title>Hub & Skybar Inventory (Mobile)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="mobile.css" />
+</head>
+<body>
+  <div class="m-app">
+    <header class="m-topbar">
+      <div class="m-titles">
+        <p class="m-eyebrow">Hub &amp; Skybar</p>
+        <h1>Inventory</h1>
+      </div>
+      <button id="menu-button" class="m-menu-btn" type="button">Menu</button>
+    </header>
+
+    <div class="m-search-row">
+      <input id="search-input" type="search" class="m-input" placeholder="Search items..." />
+      <select id="category-filter" class="m-input m-select">
+        <option value="all">All categories</option>
+      </select>
+    </div>
+    <div class="m-count" id="inventory-count">0 items</div>
+
+    <main id="card-list" class="m-card-list"></main>
+  </div>
+
+  <button id="fab-add" class="m-fab" type="button" aria-label="Add item">+</button>
+
+  <!-- Add / edit bottom sheet -->
+  <div class="m-sheet-backdrop hidden" id="item-sheet">
+    <div class="m-sheet">
+      <div class="m-sheet-handle"></div>
+      <h2 id="sheet-title">Add item</h2>
+      <form id="item-form" class="m-form" autocomplete="off">
+        <label>Item name<input id="item-name" type="text" placeholder="e.g. ABSOLUT VODKA (1000ml)" required /></label>
+        <label>Category<input id="item-category" type="text" placeholder="BAR" /></label>
+        <label>UOM<input id="item-uom" type="text" placeholder="L, ML, EA, KG, GR" /></label>
+        <label>Min on hand<input id="item-min" type="text" placeholder="1 Bot + 760mL" /></label>
+        <label>Par<input id="item-par" type="text" placeholder="480mL" /></label>
+        <input type="hidden" id="item-index" value="-1" />
+        <div class="m-sheet-actions">
+          <button type="button" id="sheet-cancel" class="m-btn m-btn-ghost">Cancel</button>
+          <button type="submit" class="m-btn m-btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- More menu bottom sheet -->
+  <div class="m-sheet-backdrop hidden" id="menu-sheet">
+    <div class="m-sheet">
+      <div class="m-sheet-handle"></div>
+      <h2>Menu</h2>
+      <div class="m-menu-grid">
+        <label class="m-menu-item file-label">
+          Take a picture
+          <input id="cam-input" type="file" accept="image/*" capture="environment" hidden />
+        </label>
+        <label class="m-menu-item file-label">
+          Upload image
+          <input id="ocr-upload" type="file" accept="image/*" hidden />
+        </label>
+        <button id="add-item" class="m-menu-item" type="button">Add item</button>
+        <button id="load-sample" class="m-menu-item" type="button">Load full list</button>
+        <button id="export-csv" class="m-menu-item" type="button">Export CSV</button>
+        <button id="export-json" class="m-menu-item" type="button">Export JSON</button>
+        <button id="import-csv" class="m-menu-item" type="button">Import CSV</button>
+        <button id="import-json" class="m-menu-item" type="button">Import JSON</button>
+        <a class="m-menu-item" href="index.html">Desktop view</a>
+        <button id="logout-button" class="m-menu-item m-menu-danger" type="button">Logout</button>
+      </div>
+      <button type="button" id="menu-close" class="m-btn m-btn-ghost m-block">Close</button>
+    </div>
+  </div>
+
+  <!-- OCR progress overlay -->
+  <div class="m-overlay hidden" id="ocr-overlay">
+    <div class="m-overlay-card">
+      <div class="m-spinner"></div>
+      <p id="ocr-status">Scanning image...</p>
+      <p class="m-muted m-small">Printed text reads best. Handwritten counts may need editing.</p>
+    </div>
+  </div>
+
+  <!-- Login -->
+  <div class="m-sheet-backdrop hidden" id="login-modal">
+    <div class="m-sheet m-login">
+      <h2>Secure access</h2>
+      <p class="m-muted">Enter the password to manage inventory.</p>
+      <form id="login-form" class="m-form" autocomplete="off">
+        <label>Password<input id="login-password" type="password" required /></label>
+        <button class="m-btn m-btn-primary m-block">Unlock</button>
+      </form>
+      <p class="m-muted m-small">Default password: <strong>hubandsky</strong></p>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
+  <script src="inventory-core.js"></script>
+  <script src="mobile.js"></script>
+</body>
+</html>
