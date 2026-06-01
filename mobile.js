@@ -20,10 +20,16 @@ const el = {
   itemIndex: document.querySelector('#item-index'),
   sheetCancel: document.querySelector('#sheet-cancel'),
 
+  fabCam: document.querySelector('#cam-fab'),
+
   menuButton: document.querySelector('#menu-button'),
   menuSheet: document.querySelector('#menu-sheet'),
   menuClose: document.querySelector('#menu-close'),
   addItem: document.querySelector('#add-item'),
+  openCalc: document.querySelector('#open-calc'),
+  saveSnapshotBtn: document.querySelector('#save-snapshot'),
+  startNew: document.querySelector('#start-new'),
+  openAnalysis: document.querySelector('#open-analysis'),
   camInput: document.querySelector('#cam-input'),
   ocrUpload: document.querySelector('#ocr-upload'),
   loadSample: document.querySelector('#load-sample'),
@@ -32,6 +38,20 @@ const el = {
   importCsv: document.querySelector('#import-csv'),
   importJson: document.querySelector('#import-json'),
   logoutButton: document.querySelector('#logout-button'),
+
+  analysisSheet: document.querySelector('#analysis-sheet'),
+  analysisClose: document.querySelector('#analysis-close'),
+  compareSelect: document.querySelector('#compare-select'),
+  compareRun: document.querySelector('#compare-run'),
+  compareResults: document.querySelector('#compare-results'),
+  snapshotList: document.querySelector('#snapshot-list'),
+
+  calcSheet: document.querySelector('#calc-sheet'),
+  calcDisplay: document.querySelector('#calc-display'),
+  calcKeys: document.querySelector('#calc-keys'),
+  calcInsert: document.querySelector('#calc-insert'),
+  calcClose: document.querySelector('#calc-close'),
+  calcTargetNote: document.querySelector('#calc-target-note'),
 
   ocrOverlay: document.querySelector('#ocr-overlay'),
   ocrStatus: document.querySelector('#ocr-status'),
@@ -297,6 +317,157 @@ function handleLogout() {
   openSheet(el.loginModal);
 }
 
+/* Calculator */
+let calcState = newCalcState();
+let calcTargetInput = null;
+
+function fieldLabelText(input) {
+  const label = input.closest('label');
+  return (label && label.childNodes[0] ? label.childNodes[0].textContent.trim() : '') || 'field';
+}
+
+function renderCalc() {
+  el.calcDisplay.textContent = calcState.display;
+}
+
+function openCalculator(targetInput) {
+  calcTargetInput = targetInput || null;
+  calcState = newCalcState();
+  if (calcTargetInput) {
+    const value = calcTargetInput.value.trim();
+    if (value && String(Number(value)) === value) {
+      calcState = { display: value, acc: null, op: null, overwrite: true };
+    }
+    el.calcTargetNote.textContent = `Insert into "${fieldLabelText(calcTargetInput)}"`;
+    el.calcInsert.style.display = '';
+  } else {
+    el.calcTargetNote.textContent = 'Scratch pad';
+    el.calcInsert.style.display = 'none';
+  }
+  renderCalc();
+  openSheet(el.calcSheet);
+}
+
+function closeCalculator() {
+  el.calcSheet.classList.add('hidden');
+  calcTargetInput = null;
+  const anyOpen = !el.itemSheet.classList.contains('hidden') ||
+    !el.menuSheet.classList.contains('hidden') ||
+    !el.loginModal.classList.contains('hidden');
+  document.body.classList.toggle('m-no-scroll', anyOpen);
+}
+
+function handleCalcKey(event) {
+  const button = event.target.closest('button[data-key]');
+  if (!button) return;
+  calcState = calcPress(calcState, button.dataset.key);
+  renderCalc();
+}
+
+function insertCalcResult() {
+  if (calcTargetInput && calcState.display !== 'Error') {
+    calcTargetInput.value = calcState.display;
+    calcTargetInput.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  closeCalculator();
+}
+
+/* Snapshots & analysis */
+function formatSnapDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return isNaN(d.getTime()) ? iso : d.toLocaleString();
+}
+
+function handleSaveSnapshot() {
+  closeSheet(el.menuSheet);
+  if (!inventory.length) {
+    alert('Nothing to save yet. Add or load items first.');
+    return;
+  }
+  const stamp = new Date();
+  const name = prompt('Name this snapshot:', 'Snapshot ' + stamp.toLocaleString());
+  if (name === null) return;
+  saveSnapshot(name, inventory, stamp.toISOString());
+  alert(`Snapshot saved. You now have ${getSnapshots().length} saved snapshot(s).`);
+}
+
+function handleStartNew() {
+  closeSheet(el.menuSheet);
+  if (!inventory.length) {
+    alert('There is nothing to clear yet.');
+    return;
+  }
+  if (!confirm(`Start a new inventory?\n\nThis saves the current counts as a snapshot, then clears Min on hand and Par for all ${inventory.length} items so you can enter fresh counts.`)) {
+    return;
+  }
+  const stamp = new Date();
+  saveSnapshot('Stock-take ' + stamp.toLocaleString(), inventory, stamp.toISOString());
+  inventory = clearedCounts(inventory);
+  saveInventory();
+  alert('Saved a snapshot and cleared the counts. Enter your new counts, then use Compare to see the % change.');
+}
+
+function renderSnapshotControls() {
+  const snaps = getSnapshots();
+  el.compareSelect.innerHTML = snaps.length
+    ? snaps.map((s, i) => `<option value="${i}">${escapeHtml(s.name)}</option>`).join('')
+    : '<option value="">No snapshots saved yet</option>';
+  el.snapshotList.innerHTML = snaps.length
+    ? snaps.map((s, i) => `
+      <div class="snap-row">
+        <div class="snap-meta">
+          <strong>${escapeHtml(s.name)}</strong>
+          <span>${escapeHtml(formatSnapDate(s.date))} &middot; ${s.items.length} items</span>
+        </div>
+        <div class="snap-actions">
+          <button type="button" class="m-btn m-btn-ghost" data-snap-action="restore" data-index="${i}">Restore</button>
+          <button type="button" class="m-btn m-btn-danger" data-snap-action="delete" data-index="${i}">Delete</button>
+        </div>
+      </div>`).join('')
+    : '<p class="cmp-empty">No snapshots saved yet. Use "Save snapshot" or "Start new inventory".</p>';
+}
+
+function openAnalysis() {
+  closeSheet(el.menuSheet);
+  renderSnapshotControls();
+  el.compareResults.innerHTML = '';
+  openSheet(el.analysisSheet);
+}
+
+function handleCompareRun() {
+  const snaps = getSnapshots();
+  const idx = Number(el.compareSelect.value);
+  if (!snaps.length || Number.isNaN(idx) || !snaps[idx]) {
+    alert('Save a snapshot first to compare against.');
+    return;
+  }
+  const result = compareInventories(snaps[idx].items, inventory, 'min');
+  el.compareResults.innerHTML =
+    `<p class="cmp-caption">Comparing <strong>${escapeHtml(snaps[idx].name)}</strong> (before) vs current counts (after).</p>` +
+    compareTableHtml(result);
+}
+
+function handleSnapshotListClick(event) {
+  const button = event.target.closest('button[data-snap-action]');
+  if (!button) return;
+  const idx = Number(button.dataset.index);
+  const snaps = getSnapshots();
+  if (!snaps[idx]) return;
+  if (button.dataset.snapAction === 'restore') {
+    if (confirm(`Restore "${snaps[idx].name}"? This replaces the current inventory.`)) {
+      inventory = snaps[idx].items.map((item) => ({ ...item }));
+      saveInventory();
+      closeSheet(el.analysisSheet);
+    }
+  } else if (button.dataset.snapAction === 'delete') {
+    if (confirm(`Delete snapshot "${snaps[idx].name}"?`)) {
+      deleteSnapshot(idx);
+      renderSnapshotControls();
+    }
+  }
+}
+
 function attachEvents() {
   el.search.addEventListener('input', (event) => {
     filterState.search = event.target.value;
@@ -315,6 +486,19 @@ function attachEvents() {
   el.itemSheet.addEventListener('click', (event) => {
     if (event.target === el.itemSheet) closeSheet(el.itemSheet);
   });
+  el.itemSheet.addEventListener('click', (event) => {
+    const trigger = event.target.closest('.calc-trigger');
+    if (trigger) openCalculator(document.querySelector('#' + trigger.dataset.calcTarget));
+  });
+
+  el.fabCam.addEventListener('click', () => el.camInput.click());
+  el.openCalc.addEventListener('click', () => { closeSheet(el.menuSheet); openCalculator(null); });
+  el.calcKeys.addEventListener('click', handleCalcKey);
+  el.calcInsert.addEventListener('click', insertCalcResult);
+  el.calcClose.addEventListener('click', closeCalculator);
+  el.calcSheet.addEventListener('click', (event) => {
+    if (event.target === el.calcSheet) closeCalculator();
+  });
 
   el.menuButton.addEventListener('click', () => openSheet(el.menuSheet));
   el.menuClose.addEventListener('click', () => closeSheet(el.menuSheet));
@@ -331,10 +515,21 @@ function attachEvents() {
   el.importJson.addEventListener('click', handleImportJson);
   el.logoutButton.addEventListener('click', handleLogout);
 
+  el.saveSnapshotBtn.addEventListener('click', handleSaveSnapshot);
+  el.startNew.addEventListener('click', handleStartNew);
+  el.openAnalysis.addEventListener('click', openAnalysis);
+  el.analysisClose.addEventListener('click', () => closeSheet(el.analysisSheet));
+  el.compareRun.addEventListener('click', handleCompareRun);
+  el.snapshotList.addEventListener('click', handleSnapshotListClick);
+  el.analysisSheet.addEventListener('click', (event) => {
+    if (event.target === el.analysisSheet) closeSheet(el.analysisSheet);
+  });
+
   el.loginForm.addEventListener('submit', handleLogin);
 }
 
 function initApp() {
+  el.calcKeys.innerHTML = calcKeypadHtml();
   attachEvents();
   if (!isLoggedIn()) {
     openSheet(el.loginModal);

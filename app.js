@@ -12,6 +12,13 @@ const elements = {
   cancelAdd: document.querySelector('#cancel-add'),
   addModal: document.querySelector('#add-modal'),
   addPanelTitle: document.querySelector('#add-panel-title'),
+  openCalc: document.querySelector('#open-calc'),
+  calcModal: document.querySelector('#calc-modal'),
+  calcDisplay: document.querySelector('#calc-display'),
+  calcKeys: document.querySelector('#calc-keys'),
+  calcInsert: document.querySelector('#calc-insert'),
+  calcClose: document.querySelector('#calc-close'),
+  calcTargetNote: document.querySelector('#calc-target-note'),
   itemForm: document.querySelector('#item-form'),
   itemName: document.querySelector('#item-name'),
   itemCategory: document.querySelector('#item-category'),
@@ -33,6 +40,15 @@ const elements = {
   clearFilters: document.querySelector('#clear-filters'),
   addFromList: document.querySelector('#add-from-list'),
   loadSample: document.querySelector('#load-sample'),
+  saveSnapshotBtn: document.querySelector('#save-snapshot'),
+  startNew: document.querySelector('#start-new'),
+  openAnalysis: document.querySelector('#open-analysis'),
+  analysisModal: document.querySelector('#analysis-modal'),
+  analysisClose: document.querySelector('#analysis-close'),
+  compareSelect: document.querySelector('#compare-select'),
+  compareRun: document.querySelector('#compare-run'),
+  compareResults: document.querySelector('#compare-results'),
+  snapshotList: document.querySelector('#snapshot-list'),
   inventoryHead: document.querySelector('#inventory-table thead')
 };
 
@@ -137,6 +153,159 @@ function handleLoadSample() {
   inventory = defaultInventory.map((item) => ({ ...item }));
   saveInventory();
   alert(`Loaded ${inventory.length} items. Review and edit the handwritten counts as needed.`);
+}
+
+/* Calculator */
+let calcState = newCalcState();
+let calcTargetInput = null;
+
+function fieldLabelText(input) {
+  const label = input.closest('label');
+  const text = label ? label.childNodes[0].textContent.trim() : '';
+  return text || 'field';
+}
+
+function renderCalc() {
+  elements.calcDisplay.textContent = calcState.display;
+}
+
+function openCalculator(targetInput) {
+  calcTargetInput = targetInput || null;
+  calcState = newCalcState();
+  if (calcTargetInput) {
+    const value = calcTargetInput.value.trim();
+    if (value && String(Number(value)) === value) {
+      calcState = { display: value, acc: null, op: null, overwrite: true };
+    }
+    elements.calcTargetNote.textContent = `Insert into "${fieldLabelText(calcTargetInput)}"`;
+    elements.calcInsert.style.display = '';
+  } else {
+    elements.calcTargetNote.textContent = 'Scratch pad';
+    elements.calcInsert.style.display = 'none';
+  }
+  renderCalc();
+  elements.calcModal.classList.remove('hidden');
+  document.body.classList.add('modal-open');
+}
+
+function closeCalculator() {
+  elements.calcModal.classList.add('hidden');
+  calcTargetInput = null;
+  document.body.classList.toggle('modal-open', !elements.addModal.classList.contains('hidden'));
+}
+
+function handleCalcKey(event) {
+  const button = event.target.closest('button[data-key]');
+  if (!button) return;
+  calcState = calcPress(calcState, button.dataset.key);
+  renderCalc();
+}
+
+function insertCalcResult() {
+  if (calcTargetInput && calcState.display !== 'Error') {
+    calcTargetInput.value = calcState.display;
+    calcTargetInput.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  closeCalculator();
+}
+
+/* Snapshots & analysis */
+function formatSnapDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return isNaN(d.getTime()) ? iso : d.toLocaleString();
+}
+
+function handleSaveSnapshot() {
+  if (!inventory.length) {
+    alert('Nothing to save yet. Add or load items first.');
+    return;
+  }
+  const stamp = new Date();
+  const name = prompt('Name this snapshot:', 'Snapshot ' + stamp.toLocaleString());
+  if (name === null) return;
+  saveSnapshot(name, inventory, stamp.toISOString());
+  alert(`Snapshot saved. You now have ${getSnapshots().length} saved snapshot(s).`);
+}
+
+function handleStartNew() {
+  if (!inventory.length) {
+    alert('There is nothing to clear yet.');
+    return;
+  }
+  if (!confirm(`Start a new inventory?\n\nThis saves the current counts as a snapshot, then clears Min on hand and Par for all ${inventory.length} items so you can enter fresh counts. The item list (name, category, UOM) is kept.`)) {
+    return;
+  }
+  const stamp = new Date();
+  saveSnapshot('Stock-take ' + stamp.toLocaleString(), inventory, stamp.toISOString());
+  inventory = clearedCounts(inventory);
+  saveInventory();
+  alert('Saved a snapshot and cleared the counts. Enter your new counts, then use "Compare / analysis" to see the % change.');
+}
+
+function openAnalysis() {
+  renderSnapshotControls();
+  elements.compareResults.innerHTML = '';
+  elements.analysisModal.classList.remove('hidden');
+  document.body.classList.add('modal-open');
+}
+
+function closeAnalysis() {
+  elements.analysisModal.classList.add('hidden');
+  document.body.classList.toggle('modal-open', !elements.addModal.classList.contains('hidden'));
+}
+
+function renderSnapshotControls() {
+  const snaps = getSnapshots();
+  elements.compareSelect.innerHTML = snaps.length
+    ? snaps.map((s, i) => `<option value="${i}">${escapeHtml(s.name)}</option>`).join('')
+    : '<option value="">No snapshots saved yet</option>';
+  elements.snapshotList.innerHTML = snaps.length
+    ? snaps.map((s, i) => `
+      <div class="snap-row">
+        <div class="snap-meta">
+          <strong>${escapeHtml(s.name)}</strong>
+          <span>${escapeHtml(formatSnapDate(s.date))} &middot; ${s.items.length} items</span>
+        </div>
+        <div class="snap-actions">
+          <button type="button" class="button button-secondary" data-snap-action="restore" data-index="${i}">Restore</button>
+          <button type="button" class="button button-ghost" data-snap-action="delete" data-index="${i}">Delete</button>
+        </div>
+      </div>`).join('')
+    : '<p class="cmp-empty">No snapshots saved yet. Use "Save snapshot" or "Start new inventory".</p>';
+}
+
+function handleCompareRun() {
+  const snaps = getSnapshots();
+  const idx = Number(elements.compareSelect.value);
+  if (!snaps.length || Number.isNaN(idx) || !snaps[idx]) {
+    alert('Save a snapshot first to compare against.');
+    return;
+  }
+  const result = compareInventories(snaps[idx].items, inventory, 'min');
+  elements.compareResults.innerHTML =
+    `<p class="cmp-caption">Comparing <strong>${escapeHtml(snaps[idx].name)}</strong> (before) vs current counts (after).</p>` +
+    compareTableHtml(result);
+}
+
+function handleSnapshotListClick(event) {
+  const button = event.target.closest('button[data-snap-action]');
+  if (!button) return;
+  const idx = Number(button.dataset.index);
+  const snaps = getSnapshots();
+  if (!snaps[idx]) return;
+  if (button.dataset.snapAction === 'restore') {
+    if (confirm(`Restore "${snaps[idx].name}"? This replaces the current inventory.`)) {
+      inventory = snaps[idx].items.map((item) => ({ ...item }));
+      saveInventory();
+      closeAnalysis();
+    }
+  } else if (button.dataset.snapAction === 'delete') {
+    if (confirm(`Delete snapshot "${snaps[idx].name}"?`)) {
+      deleteSnapshot(idx);
+      renderSnapshotControls();
+    }
+  }
 }
 
 function handleSortClick(event) {
@@ -383,7 +552,21 @@ function attachEvents() {
     if (event.target === elements.addModal) handleCancelAdd();
   });
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && !elements.addModal.classList.contains('hidden')) handleCancelAdd();
+    if (event.key !== 'Escape') return;
+    if (!elements.calcModal.classList.contains('hidden')) closeCalculator();
+    else if (!elements.analysisModal.classList.contains('hidden')) closeAnalysis();
+    else if (!elements.addModal.classList.contains('hidden')) handleCancelAdd();
+  });
+  elements.addModal.addEventListener('click', (event) => {
+    const trigger = event.target.closest('.calc-trigger');
+    if (trigger) openCalculator(document.querySelector('#' + trigger.dataset.calcTarget));
+  });
+  elements.openCalc.addEventListener('click', () => openCalculator(null));
+  elements.calcKeys.addEventListener('click', handleCalcKey);
+  elements.calcInsert.addEventListener('click', insertCalcResult);
+  elements.calcClose.addEventListener('click', closeCalculator);
+  elements.calcModal.addEventListener('click', (event) => {
+    if (event.target === elements.calcModal) closeCalculator();
   });
   elements.itemForm.addEventListener('submit', handleSaveItem);
   elements.inventoryTable.parentElement.addEventListener('click', handleTableClick);
@@ -399,11 +582,21 @@ function attachEvents() {
   elements.clearFilters.addEventListener('click', handleClearFilters);
   elements.addFromList.addEventListener('click', handleOpenAdd);
   elements.loadSample.addEventListener('click', handleLoadSample);
+  elements.saveSnapshotBtn.addEventListener('click', handleSaveSnapshot);
+  elements.startNew.addEventListener('click', handleStartNew);
+  elements.openAnalysis.addEventListener('click', openAnalysis);
+  elements.analysisClose.addEventListener('click', closeAnalysis);
+  elements.compareRun.addEventListener('click', handleCompareRun);
+  elements.snapshotList.addEventListener('click', handleSnapshotListClick);
+  elements.analysisModal.addEventListener('click', (event) => {
+    if (event.target === elements.analysisModal) closeAnalysis();
+  });
   elements.inventoryHead.addEventListener('click', handleSortClick);
 }
 
 function initApp() {
   toggleAddPanel(false);
+  elements.calcKeys.innerHTML = calcKeypadHtml();
   attachEvents();
   if (!isLoggedIn()) {
     openLogin();

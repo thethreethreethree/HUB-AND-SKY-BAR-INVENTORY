@@ -4,6 +4,21 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Hub & Skybar Inventory</title>
+  <script>
+    // Phone-sized screens get the touch-optimized page, unless desktop is forced
+    // (via the "Desktop view" link, which adds ?desktop=1).
+    (function () {
+      try {
+        if (new URLSearchParams(location.search).get('desktop') === '1') {
+          sessionStorage.setItem('hub-force-desktop', '1');
+        }
+        var forced = sessionStorage.getItem('hub-force-desktop') === '1';
+        if (!forced && window.innerWidth <= 760) {
+          location.replace('mobile.html');
+        }
+      } catch (e) {}
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Dancing+Script:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -12,9 +27,21 @@
 <body>
   <div class="page-shell">
     <header class="topbar">
-      <div>
-        <p class="eyebrow">Hub & Skybar</p>
-        <h1>Inventory Management</h1>
+      <div class="brand">
+        <svg class="brand-logo" viewBox="0 0 200 200" role="img" aria-label="Hub Kitchen Bar Coffee">
+          <g fill="none" stroke="currentColor">
+            <circle cx="100" cy="100" r="88" stroke-width="1.3" opacity="0.4" />
+            <circle cx="102" cy="98" r="82" stroke-width="2" opacity="0.85" />
+            <circle cx="98" cy="102" r="76" stroke-width="1" opacity="0.35" />
+          </g>
+          <path d="M16 102 C50 88, 78 88, 100 102 S150 116, 184 102" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.7" />
+          <text x="100" y="112" text-anchor="middle" font-family="'Dancing Script', cursive" font-weight="700" font-size="78" fill="currentColor">hub</text>
+          <text x="100" y="150" text-anchor="middle" font-family="'Inter', sans-serif" font-size="12" letter-spacing="2.5" fill="currentColor">KITCHEN &middot; BAR &middot; COFFEE</text>
+        </svg>
+        <div>
+          <p class="eyebrow">Hub & Skybar</p>
+          <h1>Inventory Management</h1>
+        </div>
       </div>
       <div class="status-pill" id="inventory-count">0 items</div>
     </header>
@@ -26,6 +53,10 @@
         </div>
         <div class="button-grid">
           <button id="open-add-button" class="button button-primary">Add Item</button>
+          <button id="open-calc" class="button button-secondary">Calculator</button>
+          <button id="save-snapshot" class="button button-secondary">Save snapshot</button>
+          <button id="start-new" class="button button-secondary">Start new inventory</button>
+          <button id="open-analysis" class="button button-secondary">Compare / analysis</button>
           <button id="load-sample" class="button button-secondary">Load full list</button>
           <button id="export-csv" class="button button-secondary">Export CSV</button>
           <button id="export-json" class="button button-secondary">Export JSON</button>
@@ -104,8 +135,22 @@
           <label>Item name<input type="text" id="item-name" placeholder="e.g. ABSOLUT VODKA (1000ml)" required /></label>
           <label>Category<input type="text" id="item-category" placeholder="BAR" required /></label>
           <label>UOM<input type="text" id="item-uom" placeholder="L, ML, EA, KG, GR" required /></label>
-          <label>Min on hand<input type="text" id="item-min" placeholder="1 Bot + 760mL" /></label>
-          <label>Par<input type="text" id="item-par" placeholder="480mL" /></label>
+          <label>Min on hand
+            <span class="input-with-calc">
+              <input type="text" id="item-min" placeholder="1 Bot + 760mL" />
+              <button type="button" class="calc-trigger" data-calc-target="item-min" aria-label="Open calculator for Min on hand">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm0 2v3h10V4H7zm1 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm4 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm4 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm-8 4a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm4 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm4 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/></svg>
+              </button>
+            </span>
+          </label>
+          <label>Par
+            <span class="input-with-calc">
+              <input type="text" id="item-par" placeholder="480mL" />
+              <button type="button" class="calc-trigger" data-calc-target="item-par" aria-label="Open calculator for Par">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm0 2v3h10V4H7zm1 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm4 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm4 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm-8 4a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm4 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm4 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/></svg>
+              </button>
+            </span>
+          </label>
         </div>
         <div class="form-actions">
           <button type="submit" class="button button-primary">Save item</button>
@@ -114,6 +159,42 @@
         <input type="hidden" id="item-index" value="-1" />
       </form>
     </section>
+  </div>
+
+  <div class="modal-backdrop hidden" id="calc-modal">
+    <div class="calc-card">
+      <div class="calc-head">
+        <h2>Calculator</h2>
+        <p class="calc-target-note" id="calc-target-note"></p>
+      </div>
+      <div class="calc-display" id="calc-display">0</div>
+      <div class="calc-keys" id="calc-keys"></div>
+      <div class="calc-actions">
+        <button type="button" id="calc-close" class="button button-ghost">Close</button>
+        <button type="button" id="calc-insert" class="button button-primary">Insert</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop hidden" id="analysis-modal">
+    <div class="analysis-card">
+      <div class="panel-heading">
+        <h2>Stock-take analysis</h2>
+      </div>
+      <div class="analysis-body">
+        <p class="help-text">Compare a saved snapshot (before) against the current counts (after). Change % is based on the Min on hand values.</p>
+        <div class="analysis-controls">
+          <select id="compare-select" class="toolbar-input"></select>
+          <button type="button" id="compare-run" class="button button-primary">Compare with current</button>
+        </div>
+        <div id="compare-results" class="compare-results"></div>
+        <h3 class="analysis-subhead">Saved snapshots</h3>
+        <div id="snapshot-list" class="snapshot-list"></div>
+      </div>
+      <div class="form-actions">
+        <button type="button" id="analysis-close" class="button button-ghost">Close</button>
+      </div>
+    </div>
   </div>
 
   <div class="modal-backdrop hidden" id="login-modal">

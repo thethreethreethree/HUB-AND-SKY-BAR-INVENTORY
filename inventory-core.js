@@ -405,3 +405,132 @@ function calcPress(state, key) {
 function newCalcStateWithError() {
   return { display: 'Error', acc: null, op: null, overwrite: true };
 }
+
+/* ---------- Snapshots (saved stock-takes) + comparison analysis ---------- */
+
+const SNAPSHOTS_KEY = 'hub-sky-snapshots';
+
+function getSnapshots() {
+  const raw = localStorage.getItem(SNAPSHOTS_KEY);
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function persistSnapshots(list) {
+  localStorage.setItem(SNAPSHOTS_KEY, JSON.stringify(list));
+}
+
+function saveSnapshot(name, items, isoDate) {
+  const snapshots = getSnapshots();
+  snapshots.push({
+    name: String(name || 'Snapshot').trim() || 'Snapshot',
+    date: isoDate || '',
+    items: items.map((item) => ({ ...item }))
+  });
+  persistSnapshots(snapshots);
+  return snapshots;
+}
+
+function deleteSnapshot(index) {
+  const snapshots = getSnapshots();
+  if (index >= 0 && index < snapshots.length) {
+    snapshots.splice(index, 1);
+    persistSnapshots(snapshots);
+  }
+  return snapshots;
+}
+
+// Clears the count fields (min/par) for a fresh stock-take while keeping the
+// item master (name/category/uom).
+function clearedCounts(items) {
+  return items.map((item) => ({ ...item, min: '', par: '' }));
+}
+
+// Extracts a comparable numeric magnitude from a free-text quantity, e.g.
+// "2 Bot + 500mL" -> 2.5, "147 Grams" -> 147, "10 L" -> 10, "" -> null.
+function parseQuantity(value) {
+  if (value == null) return null;
+  const s = String(value);
+  const bot = s.match(/(\d+(?:\.\d+)?)\s*bot/i);
+  const ml = s.match(/(\d+(?:\.\d+)?)\s*ml/i);
+  if (bot || ml) {
+    return (bot ? parseFloat(bot[1]) : 0) + (ml ? parseFloat(ml[1]) / 1000 : 0);
+  }
+  const num = s.match(/-?\d+(?:\.\d+)?/);
+  return num ? parseFloat(num[0]) : null;
+}
+
+// Compares two inventories by item name using `field` (default 'min') as the
+// count. Returns per-item change rows with percentage plus added/removed lists.
+function compareInventories(beforeItems, afterItems, field) {
+  const key = field || 'min';
+  const norm = (n) => String(n || '').trim().toLowerCase();
+  const beforeMap = new Map(beforeItems.map((i) => [norm(i.name), i]));
+  const afterMap = new Map(afterItems.map((i) => [norm(i.name), i]));
+  const rows = [];
+  let increased = 0, decreased = 0, unchanged = 0;
+
+  afterItems.forEach((a) => {
+    const b = beforeMap.get(norm(a.name));
+    if (!b) return;
+    const beforeNum = parseQuantity(b[key]);
+    const afterNum = parseQuantity(a[key]);
+    let pct = null;
+    if (beforeNum != null && afterNum != null && beforeNum !== 0) {
+      pct = ((afterNum - beforeNum) / Math.abs(beforeNum)) * 100;
+    } else if (beforeNum === 0 && afterNum != null && afterNum > 0) {
+      pct = Infinity;
+    }
+    const delta = (afterNum != null && beforeNum != null) ? afterNum - beforeNum : null;
+    if (delta != null) {
+      if (delta > 0) increased++;
+      else if (delta < 0) decreased++;
+      else unchanged++;
+    }
+    rows.push({ name: a.name, before: b[key] || '', after: a[key] || '', beforeNum, afterNum, delta, pct });
+  });
+
+  const added = afterItems.filter((a) => !beforeMap.has(norm(a.name))).map((a) => a.name);
+  const removed = beforeItems.filter((b) => !afterMap.has(norm(b.name))).map((b) => b.name);
+  return { rows, added, removed, summary: { increased, decreased, unchanged, total: rows.length } };
+}
+
+function pctLabel(pct) {
+  if (pct == null) return '<span class="cmp-na">n/a</span>';
+  if (!isFinite(pct)) return '<span class="cmp-up">NEW</span>';
+  const cls = pct > 0 ? 'cmp-up' : (pct < 0 ? 'cmp-down' : 'cmp-flat');
+  const sign = pct > 0 ? '+' : '';
+  return `<span class="${cls}">${sign}${pct.toFixed(1)}%</span>`;
+}
+
+// Renders the comparison result as an HTML string (shared by desktop + mobile).
+function compareTableHtml(result) {
+  const { rows, added, removed, summary } = result;
+  const changed = rows.filter((r) => r.delta != null && r.delta !== 0);
+  const body = changed.length
+    ? changed.map((r) => `
+      <tr>
+        <td>${escapeHtml(r.name)}</td>
+        <td>${escapeHtml(r.before)}</td>
+        <td>${escapeHtml(r.after)}</td>
+        <td>${pctLabel(r.pct)}</td>
+      </tr>`).join('')
+    : '<tr><td colspan="4" class="cmp-empty">No measurable changes between these counts.</td></tr>';
+  return `
+    <div class="cmp-summary">
+      <span class="cmp-up">${summary.increased} up</span>
+      <span class="cmp-down">${summary.decreased} down</span>
+      <span class="cmp-flat">${summary.unchanged} same</span>
+      ${added.length ? `<span class="cmp-add">${added.length} added</span>` : ''}
+      ${removed.length ? `<span class="cmp-rem">${removed.length} removed</span>` : ''}
+    </div>
+    <table class="cmp-table">
+      <thead><tr><th>Item</th><th>Before</th><th>After</th><th>Change</th></tr></thead>
+      <tbody>${body}</tbody>
+    </table>`;
+}

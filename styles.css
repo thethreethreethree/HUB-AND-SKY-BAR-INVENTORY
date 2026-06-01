@@ -47,6 +47,19 @@ label {
   margin-bottom: 24px;
 }
 
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.brand-logo {
+  width: 80px;
+  height: 80px;
+  flex: 0 0 auto;
+  color: var(--text);
+}
+
 .eyebrow {
   text-transform: uppercase;
   letter-spacing: 0.2em;
@@ -242,6 +255,12 @@ select.toolbar-input {
 
 .table-wrapper {
   padding: 0 24px 24px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-wrapper table {
+  min-width: 620px;
 }
 
 th.sortable {
@@ -356,6 +375,245 @@ body.modal-open {
   max-height: 90vh;
   overflow-y: auto;
   background: var(--surface-bright);
+}
+
+.input-with-calc {
+  position: relative;
+  display: block;
+}
+
+.input-with-calc input {
+  padding-right: 52px;
+}
+
+.calc-trigger {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 34px;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: 10px;
+  background: rgba(245, 158, 11, 0.14);
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.calc-trigger:hover {
+  background: rgba(245, 158, 11, 0.24);
+}
+
+.calc-card {
+  width: min(360px, 100%);
+  background: var(--surface-bright);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 22px;
+  box-shadow: var(--shadow);
+}
+
+.calc-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.calc-head h2 {
+  font-size: 1.1rem;
+}
+
+.calc-target-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-align: right;
+}
+
+.calc-display {
+  text-align: right;
+  font-size: 2rem;
+  font-weight: 700;
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  margin-bottom: 14px;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.calc-keys {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.calc-key {
+  padding: 16px 0;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  font-size: 1.15rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 140ms ease;
+}
+
+.calc-key:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.calc-key.calc-op {
+  color: var(--accent);
+}
+
+.calc-key.calc-fn {
+  color: var(--muted);
+}
+
+.calc-key.calc-eq {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #1b1300;
+  border: none;
+}
+
+.calc-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.calc-actions .button {
+  flex: 1;
+}
+
+/* Stock-take analysis */
+.analysis-card {
+  width: min(720px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--surface-bright);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+}
+
+.analysis-body {
+  padding: 0 24px;
+}
+
+.analysis-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.analysis-controls select {
+  flex: 1 1 220px;
+}
+
+.analysis-subhead {
+  font-size: 1rem;
+  margin: 20px 0 12px;
+}
+
+.compare-results {
+  margin-bottom: 8px;
+}
+
+.cmp-caption {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 0 0 12px;
+}
+
+.cmp-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-bottom: 12px;
+}
+
+.cmp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.cmp-table th,
+.cmp-table td {
+  text-align: left;
+  padding: 10px 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.cmp-table th {
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.cmp-empty {
+  color: var(--muted);
+  text-align: center;
+  padding: 18px;
+}
+
+.cmp-up { color: #4ade80; }
+.cmp-down { color: #f87171; }
+.cmp-flat { color: var(--muted); }
+.cmp-add { color: var(--accent); }
+.cmp-rem { color: #f87171; }
+.cmp-na { color: var(--muted); }
+
+.snapshot-list {
+  display: grid;
+  gap: 10px;
+  padding-bottom: 16px;
+}
+
+.snap-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.snap-meta {
+  display: grid;
+  gap: 2px;
+}
+
+.snap-meta span {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.snap-actions {
+  display: flex;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.snap-actions .button {
+  padding: 8px 12px;
+  font-size: 0.85rem;
 }
 
 .login-card {

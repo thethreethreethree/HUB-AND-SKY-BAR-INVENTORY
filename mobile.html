@@ -7,15 +7,27 @@
   <title>Hub & Skybar Inventory (Mobile)</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Dancing+Script:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="mobile.css" />
 </head>
 <body>
   <div class="m-app">
     <header class="m-topbar">
-      <div class="m-titles">
-        <p class="m-eyebrow">Hub &amp; Skybar</p>
-        <h1>Inventory</h1>
+      <div class="m-brand">
+        <svg class="m-logo" viewBox="0 0 200 200" role="img" aria-label="Hub Kitchen Bar Coffee">
+          <g fill="none" stroke="currentColor">
+            <circle cx="100" cy="100" r="88" stroke-width="1.6" opacity="0.4" />
+            <circle cx="102" cy="98" r="82" stroke-width="2.4" opacity="0.85" />
+            <circle cx="98" cy="102" r="76" stroke-width="1.2" opacity="0.35" />
+          </g>
+          <path d="M16 102 C50 88, 78 88, 100 102 S150 116, 184 102" fill="none" stroke="currentColor" stroke-width="1.8" opacity="0.7" />
+          <text x="100" y="112" text-anchor="middle" font-family="'Dancing Script', cursive" font-weight="700" font-size="78" fill="currentColor">hub</text>
+          <text x="100" y="150" text-anchor="middle" font-family="'Inter', sans-serif" font-size="12" letter-spacing="2" fill="currentColor">KITCHEN &middot; BAR &middot; COFFEE</text>
+        </svg>
+        <div class="m-titles">
+          <p class="m-eyebrow">Hub &amp; Skybar</p>
+          <h1>Inventory</h1>
+        </div>
       </div>
       <button id="menu-button" class="m-menu-btn" type="button">Menu</button>
     </header>
@@ -31,6 +43,9 @@
     <main id="card-list" class="m-card-list"></main>
   </div>
 
+  <button id="cam-fab" class="m-fab m-fab-secondary" type="button" aria-label="Take a picture">
+    <svg viewBox="0 0 24 24" width="26" height="26" fill="currentColor" aria-hidden="true"><path d="M9 3l-1.6 2H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.4L15 3H9zm3 4.5a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/></svg>
+  </button>
   <button id="fab-add" class="m-fab" type="button" aria-label="Add item">+</button>
 
   <!-- Add / edit bottom sheet -->
@@ -42,8 +57,22 @@
         <label>Item name<input id="item-name" type="text" placeholder="e.g. ABSOLUT VODKA (1000ml)" required /></label>
         <label>Category<input id="item-category" type="text" placeholder="BAR" /></label>
         <label>UOM<input id="item-uom" type="text" placeholder="L, ML, EA, KG, GR" /></label>
-        <label>Min on hand<input id="item-min" type="text" placeholder="1 Bot + 760mL" /></label>
-        <label>Par<input id="item-par" type="text" placeholder="480mL" /></label>
+        <label>Min on hand
+          <span class="input-with-calc">
+            <input id="item-min" type="text" placeholder="1 Bot + 760mL" />
+            <button type="button" class="calc-trigger" data-calc-target="item-min" aria-label="Open calculator for Min on hand">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm0 2v3h10V4H7zm1 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm4 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm4 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm-8 4a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm4 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm4 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/></svg>
+            </button>
+          </span>
+        </label>
+        <label>Par
+          <span class="input-with-calc">
+            <input id="item-par" type="text" placeholder="480mL" />
+            <button type="button" class="calc-trigger" data-calc-target="item-par" aria-label="Open calculator for Par">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm0 2v3h10V4H7zm1 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm4 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm4 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm-8 4a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm4 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2zm4 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2z"/></svg>
+            </button>
+          </span>
+        </label>
         <input type="hidden" id="item-index" value="-1" />
         <div class="m-sheet-actions">
           <button type="button" id="sheet-cancel" class="m-btn m-btn-ghost">Cancel</button>
@@ -68,15 +97,53 @@
           <input id="ocr-upload" type="file" accept="image/*" hidden />
         </label>
         <button id="add-item" class="m-menu-item" type="button">Add item</button>
+        <button id="open-calc" class="m-menu-item" type="button">Calculator</button>
+        <button id="save-snapshot" class="m-menu-item" type="button">Save snapshot</button>
+        <button id="start-new" class="m-menu-item" type="button">Start new inventory</button>
+        <button id="open-analysis" class="m-menu-item" type="button">Compare / analysis</button>
         <button id="load-sample" class="m-menu-item" type="button">Load full list</button>
         <button id="export-csv" class="m-menu-item" type="button">Export CSV</button>
         <button id="export-json" class="m-menu-item" type="button">Export JSON</button>
         <button id="import-csv" class="m-menu-item" type="button">Import CSV</button>
         <button id="import-json" class="m-menu-item" type="button">Import JSON</button>
-        <a class="m-menu-item" href="index.html">Desktop view</a>
+        <a class="m-menu-item" href="index.html?desktop=1">Desktop view</a>
         <button id="logout-button" class="m-menu-item m-menu-danger" type="button">Logout</button>
       </div>
       <button type="button" id="menu-close" class="m-btn m-btn-ghost m-block">Close</button>
+    </div>
+  </div>
+
+  <!-- Calculator bottom sheet -->
+  <div class="m-sheet-backdrop hidden" id="calc-sheet">
+    <div class="m-sheet">
+      <div class="m-sheet-handle"></div>
+      <div class="calc-head">
+        <h2>Calculator</h2>
+        <p class="calc-target-note" id="calc-target-note"></p>
+      </div>
+      <div class="calc-display" id="calc-display">0</div>
+      <div class="calc-keys" id="calc-keys"></div>
+      <div class="m-sheet-actions">
+        <button type="button" id="calc-close" class="m-btn m-btn-ghost">Close</button>
+        <button type="button" id="calc-insert" class="m-btn m-btn-primary">Insert</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stock-take analysis sheet -->
+  <div class="m-sheet-backdrop hidden" id="analysis-sheet">
+    <div class="m-sheet">
+      <div class="m-sheet-handle"></div>
+      <h2>Stock-take analysis</h2>
+      <p class="m-muted m-small">Compare a saved snapshot (before) vs the current counts (after), by Min on hand.</p>
+      <div class="analysis-controls">
+        <select id="compare-select" class="m-input m-select"></select>
+        <button type="button" id="compare-run" class="m-btn m-btn-primary">Compare</button>
+      </div>
+      <div id="compare-results" class="compare-results"></div>
+      <h3 class="analysis-subhead">Saved snapshots</h3>
+      <div id="snapshot-list" class="snapshot-list"></div>
+      <button type="button" id="analysis-close" class="m-btn m-btn-ghost m-block">Close</button>
     </div>
   </div>
 

@@ -23,7 +23,16 @@ A simple browser-based inventory management system for Hub & Skybar.
 - paste CSV/JSON directly into the interface (desktop)
 - one-click "Load full list" to seed the full Hub & Skybar inventory
 - image OCR to auto-populate rows from photos (printed text reads best)
-- mobile "Take a picture" camera capture that feeds OCR
+- mobile "Take a picture" camera capture (camera FAB) that feeds OCR
+- built-in calculator, including a calculator button on the Min on hand / Par
+  fields that inserts the result
+- "Start new inventory" — saves a snapshot, then clears the counts for a fresh
+  stock-take (keeps the item list)
+- save named snapshots and restore them later
+- stock-take analysis: compare a snapshot vs current counts with percentage
+  increase/decrease per item, plus added/removed/unchanged summary
+- Hub Kitchen / Bar / Coffee logo on both pages
+- phone-sized screens are sent to the mobile page automatically
 - desktop and mobile share the same `localStorage` data, so edits stay in sync
 - local browser persistence using `localStorage`
 

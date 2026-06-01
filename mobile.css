@@ -63,6 +63,20 @@ label {
   background: linear-gradient(180deg, var(--bg) 70%, rgba(9, 11, 16, 0.4));
 }
 
+.m-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.m-logo {
+  width: 52px;
+  height: 52px;
+  flex: 0 0 auto;
+  color: var(--text);
+}
+
 .m-eyebrow {
   margin: 0 0 2px;
   text-transform: uppercase;
@@ -242,6 +256,103 @@ label {
   line-height: 1;
   box-shadow: 0 16px 30px rgba(245, 158, 11, 0.4);
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.m-fab-secondary {
+  bottom: calc(88px + env(safe-area-inset-bottom));
+  width: 54px;
+  height: 54px;
+  background: var(--surface-bright);
+  color: var(--accent);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+}
+
+/* Field calculator trigger */
+.input-with-calc {
+  position: relative;
+  display: block;
+}
+
+.input-with-calc input {
+  padding-right: 56px;
+}
+
+.calc-trigger {
+  position: absolute;
+  top: 50%;
+  right: 7px;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 38px;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 11px;
+  background: rgba(245, 158, 11, 0.16);
+  color: var(--accent);
+}
+
+/* Calculator sheet */
+.calc-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.calc-target-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-align: right;
+}
+
+.calc-display {
+  text-align: right;
+  font-size: 2.2rem;
+  font-weight: 700;
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  margin: 12px 0 14px;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.calc-keys {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.calc-key {
+  padding: 18px 0;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.calc-key.calc-op {
+  color: var(--accent);
+}
+
+.calc-key.calc-fn {
+  color: var(--muted);
+}
+
+.calc-key.calc-eq {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #1b1300;
+  border: none;
 }
 
 /* Bottom sheets */
@@ -403,4 +514,115 @@ label {
 
 .m-small {
   font-size: 0.8rem;
+}
+
+/* Stock-take analysis */
+.analysis-controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin: 12px 0 14px;
+}
+
+.analysis-controls .m-select {
+  flex: 1 1 auto;
+}
+
+.analysis-subhead {
+  font-size: 0.95rem;
+  margin: 18px 0 10px;
+}
+
+.cmp-caption {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 0 0 10px;
+}
+
+.cmp-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-bottom: 12px;
+}
+
+.cmp-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.cmp-table th,
+.cmp-table td {
+  text-align: left;
+  padding: 9px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.cmp-table th {
+  color: var(--muted);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.cmp-empty {
+  color: var(--muted);
+  text-align: center;
+  padding: 16px;
+}
+
+.cmp-up { color: #4ade80; }
+.cmp-down { color: #f87171; }
+.cmp-flat { color: var(--muted); }
+.cmp-add { color: var(--accent); }
+.cmp-rem { color: #f87171; }
+.cmp-na { color: var(--muted); }
+
+.snapshot-list {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.snap-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.snap-meta {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.snap-meta strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.snap-meta span {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.snap-actions {
+  display: flex;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.snap-actions .m-btn {
+  padding: 9px 12px;
+  min-height: 0;
+  font-size: 0.85rem;
 }
